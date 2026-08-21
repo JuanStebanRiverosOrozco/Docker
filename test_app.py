@@ -1,2 +1,9 @@
-def test_ejemplo_basico():
-    assert 1+1 == 2
+from sample_app import sample
+
+
+def test_index():
+    client = sample.test_client()
+
+    response = client.get("/")
+
+    assert response.status_code == 200
