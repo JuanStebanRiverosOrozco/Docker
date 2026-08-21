@@ -4,6 +4,8 @@ services:
     container_name: proxy-nginx
     ports:
       - "80:80"
+      - "81:81"
+      - "443:443"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
@@ -11,7 +13,7 @@ services:
     networks:
       - red-cba
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:80 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -67,6 +69,17 @@ services:
     networks:
       - red-cba
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: always
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - red-cba
+
 networks:
   red-cba:
     name: red-cba-ejemplo
@@ -77,3 +90,6 @@ volumes:
 
   portainer-data:
     name: portainer-data
+
+  uptime-kuma-data:
+    name: uptime-kuma-data
