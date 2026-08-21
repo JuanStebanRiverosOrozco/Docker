@@ -6,4 +6,6 @@ def test_index():
 
     response = client.get("/")
 
+    print(f"Status Code de /: {response.status_code}")
+
     assert response.status_code == 200
