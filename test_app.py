@@ -8,4 +8,4 @@ def test_index():
 
     print(f"STATUS_CODE: {response.status_code}")
 
-    assert response.status_code == 999
+    assert response.status_code == 200
