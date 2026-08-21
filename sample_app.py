@@ -13,7 +13,7 @@ def home():
     except Exception as e:
         db_status = f"Error al conectar a la base de datos: {e}"
 
-    return f"<h1>Bienvenido a mi aplicación Flask Ok</h1><p>{db_status}</p>"
+    return f"<h1>Bienvenido a mi aplicación Flask Ok</h1><p>{db_status}</p> arreglado todo hoy"
 
 if __name__ == "__main__":
     sample.run(host='0.0.0.0', port=5050, debug=True)
