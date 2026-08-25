@@ -47,7 +47,9 @@ jobs:
           context: .
           push: false
           load: true
+          no-cache: true
           tags: juanstebanriveros/imagen:latest
+          
       - name: Escanear contenedor con trivy
         uses: aquasecurity/trivy-action@master
         with: 
