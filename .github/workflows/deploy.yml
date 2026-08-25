@@ -53,7 +53,7 @@ jobs:
       - name: Escanear contenedor con trivy
         uses: aquasecurity/trivy-action@master
         with: 
-          image-ref: 'blackt1221/mi-api:latest'
+          image-ref: 'juanstebanriveros/imagen:latest'
           format: 'table'
           exit-code: '1' # Si encuentra alguna falla, rompe la ejecución
           ignore-unfixed: true
@@ -61,7 +61,7 @@ jobs:
           severity: 'CRITICAL,HIGH' # Son los que van a detener la ejecución
       
       - name: Subir la imagen a Docker Hub
-        run: docker push blackt1221/mi-api:latest
+        run: docker push juanstebanriveros/imagen:latest
 
       - name : Desplegar en el Servidor cloud
         uses : appleboy/ssh-action@v1.0.3
