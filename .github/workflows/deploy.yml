@@ -51,7 +51,7 @@ jobs:
           tags: juanstebanriveros/imagen:latest
 
       - name: Escanear contenedor con trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with: 
           image-ref: 'juanstebanriveros/imagen:latest'
           format: 'table'
