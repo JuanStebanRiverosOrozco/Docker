@@ -2,52 +2,106 @@ name: Publicar Imagen en Docker Hub
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feature/vulnerabilidades"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Descargar código
+    steps:
+      - name: Descargar codigo
         uses: actions/checkout@v4
-      - name: Configurar python
+
+      - name: Configurar Python
         uses: actions/setup-python@v5
-        with: 
+        with:
           python-version: "3.14"
 
-      - name: Instalar Dependencias
-        run:
-          python -m pip install --upgrade pip && pip install -r requirements.txt && pip install pytest
-      
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
       - name: Ejecutar pruebas pytest
         run: pytest -v -s
 
-  build-and-push:
-    needs: test
+  bandit:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar codigo
-        uses: actions/checkout@v3
-      
-      - name: Iniciar sesión en docker hub
-        uses: docker/login-action@v2
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit
+
+      - name: Escaneo de seguridad (Bandit)
+        run: bandit -r . -s B101,B104
+
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Iniciar sesion en Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Construir y subir imagen
-        uses: docker/build-push-action@v4
+      - name: Construir imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          no-cache: true
+          tags: juanstebanriveros/imagen:latest
+
+      - name: Escanear contenedor con Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'juanstebanriveros/imagen:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  deploy:
+    needs: [test, bandit, trivy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Iniciar sesion en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Construir y subir imagen a Docker Hub
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: juanstebanriveros/imagen:latest
-      - name : Desplegar en el Servidor cloud
-        uses : appleboy/ssh-action@v1.0.3
-        with :
+
+      - name: Desplegar en el Servidor cloud
+        uses: appleboy/ssh-action@v1.2.0
+        with:
           host: ${{secrets.SERVER_HOST}}
           username: ${{secrets.SERVER_ADMIN}}
           key: ${{secrets.SERVER_SHH_KEY}}
-          scripts:
+          script: |
             cd ~/Docker
             docker compose pull app-backend
             docker compose up -d
