@@ -6,6 +6,8 @@ from flask import Flask
 
 sample = Flask(__name__)
 
+MYSQL_PASSWORD = "super_secret_123"
+
 @sample.route("/")
 def home():
     try:
@@ -20,7 +22,7 @@ def home():
     except Exception as e:
         db_status = f"Error al conectar a la base de datos: {e}"
 
-    return f"<h1>Bienvenido a mi aplicación Flask Ok</h1><p>{db_status}</p> arreglado todo hoy"
+    return f"<h1>Bienvenido a mi aplicación Flask Ok</h1><p>{db_status}</p> arreglado todo hoy", 500
 
 if __name__ == "__main__":
-    sample.run(host="0.0.0.0", port=5050, debug=False)  # nosec B104
+    sample.run(host="0.0.0.0", port=5050, debug=True)
